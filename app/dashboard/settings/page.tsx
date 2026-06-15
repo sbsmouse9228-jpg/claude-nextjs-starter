@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Settings, Bell, User, Shield, Check } from "lucide-react"
 import {
   Card,
@@ -18,15 +18,20 @@ export default function SettingsPage() {
   const [passwordChanged, setPasswordChanged] = useState(false)
   const [notifications, setNotifications] = useState([true, true, false])
 
-  const handleSaveProfile = () => {
-    setProfileSaved(true)
-    setTimeout(() => setProfileSaved(false), 2000)
-  }
+  const handleSaveProfile = () => setProfileSaved(true)
+  const handleChangePassword = () => setPasswordChanged(true)
 
-  const handleChangePassword = () => {
-    setPasswordChanged(true)
-    setTimeout(() => setPasswordChanged(false), 2000)
-  }
+  useEffect(() => {
+    if (!profileSaved) return
+    const id = setTimeout(() => setProfileSaved(false), 2000)
+    return () => clearTimeout(id)
+  }, [profileSaved])
+
+  useEffect(() => {
+    if (!passwordChanged) return
+    const id = setTimeout(() => setPasswordChanged(false), 2000)
+    return () => clearTimeout(id)
+  }, [passwordChanged])
 
   const toggleNotification = (index: number) => {
     setNotifications(prev => prev.map((val, i) => (i === index ? !val : val)))
@@ -52,16 +57,16 @@ export default function SettingsPage() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">이름</label>
-                <Input placeholder="홍길동" defaultValue="김철수" />
+                <label htmlFor="profile-name" className="text-sm font-medium">이름</label>
+                <Input id="profile-name" placeholder="홍길동" defaultValue="김철수" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">이메일</label>
-                <Input type="email" placeholder="example@email.com" defaultValue="kim@example.com" />
+                <label htmlFor="profile-email" className="text-sm font-medium">이메일</label>
+                <Input id="profile-email" type="email" placeholder="example@email.com" defaultValue="kim@example.com" />
               </div>
               <div className="sm:col-span-2 space-y-1.5">
-                <label className="text-sm font-medium">소개</label>
-                <Input placeholder="간단한 자기소개를 입력하세요" />
+                <label htmlFor="profile-bio" className="text-sm font-medium">소개</label>
+                <Input id="profile-bio" placeholder="간단한 자기소개를 입력하세요" />
               </div>
               <div className="sm:col-span-2 pt-2 flex items-center gap-3">
                 <Button size="sm" onClick={handleSaveProfile}>
@@ -103,6 +108,7 @@ export default function SettingsPage() {
                     type="button"
                     role="switch"
                     aria-checked={notifications[i]}
+                    aria-label={item.label}
                     onClick={() => toggleNotification(i)}
                     className={cn(
                       "shrink-0 h-5 w-9 rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -134,12 +140,12 @@ export default function SettingsPage() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">현재 비밀번호</label>
-                <Input type="password" placeholder="현재 비밀번호" />
+                <label htmlFor="current-password" className="text-sm font-medium">현재 비밀번호</label>
+                <Input id="current-password" type="password" placeholder="현재 비밀번호" />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">새 비밀번호</label>
-                <Input type="password" placeholder="새 비밀번호" />
+                <label htmlFor="new-password" className="text-sm font-medium">새 비밀번호</label>
+                <Input id="new-password" type="password" placeholder="새 비밀번호" />
               </div>
               <div className="sm:col-span-2 pt-2 flex items-center gap-3">
                 <Button variant="outline" size="sm" onClick={handleChangePassword}>

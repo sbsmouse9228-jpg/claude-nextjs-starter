@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Users, UserPlus, Check } from "lucide-react"
 import {
   Card,
@@ -36,10 +36,13 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
 export default function UsersPage() {
   const [added, setAdded] = useState(false)
 
-  const handleAddUser = () => {
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
-  }
+  const handleAddUser = () => setAdded(true)
+
+  useEffect(() => {
+    if (!added) return
+    const id = setTimeout(() => setAdded(false), 2000)
+    return () => clearTimeout(id)
+  }, [added])
 
   return (
     <div>
