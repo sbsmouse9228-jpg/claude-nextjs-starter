@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Zap, Home, BarChart3, Users, Settings } from "lucide-react"
+import { Receipt, LayoutDashboard, FileText, Users, BarChart3, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/dashboard", label: "홈", icon: Home },
-  { href: "/dashboard/analytics", label: "분석", icon: BarChart3 },
-  { href: "/dashboard/users", label: "사용자", icon: Users },
+  { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
+  { href: "/dashboard/invoices", label: "청구서", icon: FileText },
+  { href: "/dashboard/customers", label: "고객", icon: Users },
+  { href: "/dashboard/analytics", label: "통계", icon: BarChart3 },
   { href: "/dashboard/settings", label: "설정", icon: Settings },
 ]
 
@@ -18,13 +19,16 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
       <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-        <Zap className="size-5 text-sidebar-primary" />
-        <span className="font-semibold text-sidebar-foreground">Next Starter</span>
+        <Receipt className="size-5 text-sidebar-primary" />
+        <span className="font-semibold text-sidebar-foreground">청구서 관리</span>
       </div>
       <nav className="flex flex-col gap-1 p-2">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}

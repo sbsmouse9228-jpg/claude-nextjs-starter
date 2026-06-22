@@ -46,3 +46,22 @@ next-env.d.ts
 # 스크린샷 (루트 및 public)
 *.png
 public/*.png
+
+/lib/generated/prisma
+
+# 로컬 개발 데이터베이스
+dev.db
+dev.db-shm
+dev.db-wal
+
+# 로그 파일
+dev.log
+
+# Shrimp Task Manager 런타임 데이터
+Shrimp_data/
+
+# 로컬 테스트 결과물
+notion-db-check.json
+
+# Claude 에이전트 런타임 메모리
+.claude/agent-memory/

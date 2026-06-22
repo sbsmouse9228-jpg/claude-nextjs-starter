@@ -3,12 +3,12 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useTheme } from "next-themes"
-import { Zap, Sun, Moon, Menu, X } from "lucide-react"
+import { Receipt, Sun, Moon, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
-  { href: "/", label: "홈" },
   { href: "/dashboard", label: "대시보드" },
+  { href: "/dashboard/invoices", label: "청구서" },
 ]
 
 export function Header() {
@@ -18,9 +18,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Zap className="size-5 text-primary" />
-          <span>Next Starter</span>
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <Receipt className="size-5 text-primary" />
+          <span>청구서 관리</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
