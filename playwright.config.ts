@@ -6,6 +6,8 @@ import { defineConfig, devices } from "@playwright/test"
  * - 브라우저: Chromium 단일 실행 (CI 속도 최적화)
  */
 export default defineConfig({
+  globalSetup: "./tests/global-setup.ts",
+
   // 테스트 파일 위치
   testDir: "./tests/e2e",
 
