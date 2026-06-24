@@ -7,15 +7,39 @@ export const notion = new Client({
   auth: process.env.NOTION_API_KEY,
 });
 
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const isRateLimit = err?.code === "rate_limited" || err?.status === 429;
+      if (isRateLimit && attempt < maxRetries - 1) {
+        await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 1000));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("Max retries exceeded");
+}
+
 function extractRichText(richText: { plain_text: string }[]): string {
   return richText?.map((t) => t.plain_text).join("") ?? "";
+}
+
+function extractCoverImage(page: any): string | null {
+  const cover = page?.cover;
+  if (!cover) return null;
+  if (cover.type === "external") return cover.external?.url ?? null;
+  if (cover.type === "file") return cover.file?.url ?? null;
+  return null;
 }
 
 const _getQuote = async (pageId: string): Promise<QuoteData | null> => {
   try {
     const [page, blocksRes] = await Promise.all([
-      notion.pages.retrieve({ page_id: pageId }),
-      notion.blocks.children.list({ block_id: pageId }),
+      withRetry(() => notion.pages.retrieve({ page_id: pageId })),
+      withRetry(() => notion.blocks.children.list({ block_id: pageId })),
     ]);
 
     if (!("properties" in page)) return null;
@@ -28,9 +52,9 @@ const _getQuote = async (pageId: string): Promise<QuoteData | null> => {
     for (const block of blocksRes.results) {
       if (!("type" in block) || block.type !== "table") continue;
 
-      const tableRows = await notion.blocks.children.list({
-        block_id: block.id,
-      });
+      const tableRows = await withRetry(() =>
+        notion.blocks.children.list({ block_id: block.id })
+      );
 
       let isHeader = true;
       for (const row of tableRows.results) {
@@ -65,6 +89,7 @@ const _getQuote = async (pageId: string): Promise<QuoteData | null> => {
       subtotal: props["소계"]?.number ?? 0,
       total: props["총액"]?.number ?? 0,
       lineItems,
+      coverImage: extractCoverImage(page),
     };
   } catch {
     return null;

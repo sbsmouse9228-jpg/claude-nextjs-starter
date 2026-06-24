@@ -68,6 +68,17 @@ export default function QuoteViewer({ quote }: { quote: QuoteData }) {
 
       {/* 견적서 본문 */}
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden print:shadow-none print:rounded-none print:border-none">
+        {/* 커버 이미지 */}
+        {quote.coverImage && (
+          <div className="h-36 overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={quote.coverImage}
+              alt="견적서 커버"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
         {/* 헤더 */}
         <div className="bg-gray-900 text-white px-8 py-10">
           <div className="flex justify-between items-start">

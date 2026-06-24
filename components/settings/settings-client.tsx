@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Check, User, Bell, Shield } from "lucide-react"
 import {
   Card,
@@ -29,6 +29,32 @@ export function SettingsClient({ initialUser }: Props) {
   const [passwordError, setPasswordError] = useState("")
 
   const [notifications, setNotifications] = useState([true, true, false])
+  const notifKeys = ["newUser", "payment", "security"] as const
+
+  useEffect(() => {
+    fetch("/api/users/notifications")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) {
+          setNotifications([json.data.newUser, json.data.payment, json.data.security])
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const handleToggleNotification = async (index: number) => {
+    const next = notifications.map((v, i) => (i === index ? !v : v))
+    setNotifications(next)
+    await fetch("/api/users/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        newUser: next[0],
+        payment: next[1],
+        security: next[2],
+      }),
+    }).catch(() => {})
+  }
 
   const handleSaveProfile = async () => {
     setProfileError("")
@@ -142,9 +168,7 @@ export function SettingsClient({ initialUser }: Props) {
                     role="switch"
                     aria-checked={notifications[i]}
                     aria-label={item.label}
-                    onClick={() =>
-                      setNotifications((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
-                    }
+                    onClick={() => handleToggleNotification(i)}
                     className={cn(
                       "shrink-0 h-5 w-9 rounded-full transition-colors cursor-pointer",
                       notifications[i] ? "bg-primary" : "bg-muted"

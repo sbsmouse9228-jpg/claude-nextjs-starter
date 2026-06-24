@@ -22,4 +22,5 @@ export type QuoteData = {
   subtotal: number;
   total: number;
   lineItems: LineItem[];
+  coverImage: string | null;
 };
