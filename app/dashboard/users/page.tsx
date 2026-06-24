@@ -58,7 +58,7 @@ export default async function UsersPage() {
           ) : (
             <div className="space-y-3">
               {users.map((user) => {
-                const initial = user.name.charAt(0)
+                const initial = user.name.trim().charAt(0).toUpperCase() || "?"
                 const joinedAt = new Date(user.createdAt).toLocaleDateString("ko-KR")
                 const role = user.role
                 return (

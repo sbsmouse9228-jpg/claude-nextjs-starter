@@ -1,10 +1,7 @@
-import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getQuote } from "@/lib/notion";
 import QuoteViewer from "@/components/quote/QuoteViewer";
-
-const getQuoteMemo = cache(getQuote);
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -12,7 +9,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const quote = await getQuoteMemo(id);
+  const quote = await getQuote(id);
   if (!quote) return { title: "견적서를 찾을 수 없습니다" };
 
   return {
@@ -28,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function QuotePage({ params }: Props) {
   const { id } = await params;
-  const quote = await getQuoteMemo(id);
+  const quote = await getQuote(id);
 
   if (!quote) notFound();
 

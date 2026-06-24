@@ -4,6 +4,7 @@ import { useState } from "react";
 import { QuoteData } from "@/types/quote";
 import { formatQuoteAmount, formatQuoteDate } from "@/lib/format";
 import { Download, CheckCircle2, Clock, Send, XCircle, Loader2, AlertTriangle } from "lucide-react";
+import { parseISO, endOfDay, isBefore } from "date-fns";
 
 const STATUS_CONFIG = {
   초안: { label: "초안", icon: Clock, className: "bg-gray-100 text-gray-600" },
@@ -20,7 +21,7 @@ export default function QuoteViewer({ quote }: { quote: QuoteData }) {
   const StatusIcon = status?.icon;
   const isExpired =
     quote.dueDate !== null &&
-    new Date(quote.dueDate) < new Date() &&
+    isBefore(endOfDay(parseISO(quote.dueDate)), new Date()) &&
     quote.status !== "승인됨";
 
   const handleDownloadPDF = async () => {

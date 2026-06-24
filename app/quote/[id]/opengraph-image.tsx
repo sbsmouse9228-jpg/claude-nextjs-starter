@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { ImageResponse } from "next/og";
 import { getQuote } from "@/lib/notion";
 
@@ -10,7 +12,12 @@ type Props = {
 
 export default async function Image({ params }: Props) {
   const { id } = await params;
-  const quote = await getQuote(id);
+  const [quote, fontData] = await Promise.all([
+    getQuote(id),
+    fs.promises.readFile(
+      path.join(process.cwd(), "public/fonts/NotoSansKR-Regular.ttf")
+    ),
+  ]);
 
   const title = quote?.title ?? "견적서";
   const clientName = quote?.clientName ?? "";
@@ -32,7 +39,7 @@ export default async function Image({ params }: Props) {
           flexDirection: "column",
           backgroundColor: "#111827",
           padding: "60px",
-          fontFamily: "system-ui, sans-serif",
+          fontFamily: "NotoSansKR, system-ui, sans-serif",
         }}
       >
         <div style={{ color: "#6b7280", fontSize: 18, marginBottom: "auto" }}>
@@ -82,6 +89,11 @@ export default async function Image({ params }: Props) {
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      fonts: [
+        { name: "NotoSansKR", data: fontData, style: "normal", weight: 400 },
+      ],
+    }
   );
 }
