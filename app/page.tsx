@@ -1,3 +1,5 @@
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
 import Link from "next/link"
 import {
   Zap,
@@ -59,7 +61,10 @@ const techStack = [
   "next-themes",
 ]
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth()
+  if (session) redirect("/dashboard")
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

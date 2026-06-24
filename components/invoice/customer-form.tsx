@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type Resolver } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +26,21 @@ export function CustomerForm({ defaultValues }: CustomerFormProps) {
   const isEditing = !!defaultValues;
 
   const form = useForm<CustomerFormValues>({
-    resolver: zodResolver(CustomerFormSchema),
-    defaultValues: defaultValues ?? {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      company: "",
+    resolver: standardSchemaResolver(CustomerFormSchema) as Resolver<CustomerFormValues>,
+    defaultValues: defaultValues
+      ? {
+          name: defaultValues.name,
+          email: defaultValues.email,
+          phone: defaultValues.phone ?? "",
+          address: defaultValues.address ?? "",
+          company: defaultValues.company ?? "",
+        }
+      : {
+          name: "",
+          email: "",
+          phone: "",
+          address: "",
+          company: "",
     },
   });
 

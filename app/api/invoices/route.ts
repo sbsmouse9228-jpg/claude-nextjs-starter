@@ -1,8 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { generateInvoiceNumber } from "@/lib/invoice-number";
 import { InvoiceFormSchema } from "@/types/invoice";
+import { InvoiceStatus } from "@/lib/generated/prisma/enums";
+import { auth } from "@/auth";
 
 export async function GET(request: Request) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") ?? undefined;
@@ -13,7 +17,7 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     const where = {
-      ...(status ? { status: status as string } : {}),
+      ...(status ? { status: status as InvoiceStatus } : {}),
       ...(customerId ? { customerId } : {}),
       ...(search ? { invoiceNumber: { contains: search } } : {}),
     };
@@ -36,6 +40,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const body = await request.json();
     const parsed = InvoiceFormSchema.safeParse(body);

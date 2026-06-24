@@ -80,7 +80,7 @@ export default function InvoicesPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={status} onValueChange={setStatus}>
+        <Select value={status} onValueChange={(v) => v && setStatus(v)}>
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type Resolver } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export function InvoiceForm({ customers, defaultValues }: InvoiceFormProps) {
   const router = useRouter();
 
   const form = useForm<InvoiceFormValues>({
-    resolver: zodResolver(InvoiceFormSchema),
+    resolver: standardSchemaResolver(InvoiceFormSchema) as Resolver<InvoiceFormValues>,
     defaultValues: defaultValues
       ? {
           customerId: defaultValues.customerId,
@@ -135,7 +135,7 @@ export function InvoiceForm({ customers, defaultValues }: InvoiceFormProps) {
               <FormItem>
                 <FormLabel>세율</FormLabel>
                 <Select
-                  onValueChange={(v) => field.onChange(parseFloat(v))}
+                  onValueChange={(v) => v && field.onChange(parseFloat(v))}
                   defaultValue={String(field.value)}
                 >
                   <FormControl>
@@ -178,7 +178,6 @@ export function InvoiceForm({ customers, defaultValues }: InvoiceFormProps) {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -211,7 +210,6 @@ export function InvoiceForm({ customers, defaultValues }: InvoiceFormProps) {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>

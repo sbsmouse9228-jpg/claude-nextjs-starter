@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { CustomerFormSchema } from "@/types/invoice";
+import { auth } from "@/auth";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { id } = await params;
     const customer = await prisma.customer.findUnique({
@@ -30,6 +33,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { id } = await params;
     const body = await request.json();
@@ -57,6 +62,8 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { id } = await params;
 

@@ -1,7 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { CustomerFormSchema } from "@/types/invoice";
+import { auth } from "@/auth";
 
 export async function GET(request: Request) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") ?? "";
@@ -36,6 +39,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const body = await request.json();
     const parsed = CustomerFormSchema.safeParse(body);

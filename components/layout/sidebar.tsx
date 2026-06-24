@@ -13,7 +13,11 @@ const navItems = [
   { href: "/dashboard/settings", label: "설정", icon: Settings },
 ]
 
-export function Sidebar() {
+type SidebarProps = {
+  user: { name: string; email: string } | null
+}
+
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -22,7 +26,7 @@ export function Sidebar() {
         <Receipt className="size-5 text-sidebar-primary" />
         <span className="font-semibold text-sidebar-foreground">청구서 관리</span>
       </div>
-      <nav className="flex flex-col gap-1 p-2">
+      <nav className="flex flex-col gap-1 p-2 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive =
@@ -46,6 +50,19 @@ export function Sidebar() {
           )
         })}
       </nav>
+      {user && (
+        <div className="border-t border-sidebar-border p-3">
+          <div className="flex items-center gap-2 px-2 py-1.5">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+              {user.name.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-sidebar-foreground truncate">{user.name}</p>
+              <p className="text-[10px] text-sidebar-foreground/60 truncate">{user.email}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   )
 }

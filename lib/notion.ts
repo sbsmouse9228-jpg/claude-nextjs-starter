@@ -1,5 +1,6 @@
 import { Client } from "@notionhq/client";
 import type { QuoteData, LineItem } from "@/types/quote";
+import type { BlogPost, BlogPostDetail, NotionBlock, RichText } from "@/types/blog";
 
 export const notion = new Client({
   auth: process.env.NOTION_API_KEY,
@@ -63,6 +64,69 @@ export async function getQuote(pageId: string): Promise<QuoteData | null> {
       subtotal: props["소계"]?.number ?? 0,
       total: props["총액"]?.number ?? 0,
       lineItems,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const databaseId = process.env.NOTION_BLOG_DATABASE_ID!;
+    const res = await notion.databases.query({
+      database_id: databaseId,
+      sorts: [{ property: "Published", direction: "descending" }],
+    });
+
+    return res.results
+      .filter((p) => "properties" in p)
+      .map((p) => {
+        const props = (p as any).properties;
+        return {
+          id: p.id,
+          title: extractRichText(props["Title"]?.title ?? props["이름"]?.title ?? []),
+          category: props["Category"]?.select?.name ?? props["카테고리"]?.select?.name ?? null,
+          publishedAt: props["Published"]?.date?.start ?? props["발행일"]?.date?.start ?? null,
+          status: props["Status"]?.status?.name ?? props["상태"]?.status?.name ?? null,
+          slug: p.id.replace(/-/g, ""),
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
+export async function getBlogPost(pageId: string): Promise<BlogPostDetail | null> {
+  try {
+    const formattedId = pageId.replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, "$1-$2-$3-$4-$5");
+    const [page, blocksRes] = await Promise.all([
+      notion.pages.retrieve({ page_id: formattedId }),
+      notion.blocks.children.list({ block_id: formattedId, page_size: 100 }),
+    ]);
+
+    if (!("properties" in page)) return null;
+    const props = (page as any).properties;
+
+    const blocks: NotionBlock[] = [];
+    for (const block of blocksRes.results) {
+      if (!("type" in block)) continue;
+      const b = block as any;
+
+      if (b.type === "bulleted_list_item" || b.type === "numbered_list_item" || b.type === "toggle") {
+        const children = await notion.blocks.children.list({ block_id: b.id });
+        b[b.type].children = children.results;
+      }
+      blocks.push(b as NotionBlock);
+    }
+
+    return {
+      id: page.id,
+      title: extractRichText(props["Title"]?.title ?? props["이름"]?.title ?? []),
+      category: props["Category"]?.select?.name ?? props["카테고리"]?.select?.name ?? null,
+      publishedAt: props["Published"]?.date?.start ?? props["발행일"]?.date?.start ?? null,
+      status: props["Status"]?.status?.name ?? props["상태"]?.status?.name ?? null,
+      slug: page.id.replace(/-/g, ""),
+      blocks,
     };
   } catch {
     return null;

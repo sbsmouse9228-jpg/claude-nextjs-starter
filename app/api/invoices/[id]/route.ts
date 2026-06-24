@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { InvoiceFormSchema } from "@/types/invoice";
 import { z } from "zod";
+import { auth } from "@/auth";
 
 const StatusUpdateSchema = z.object({
   status: z.enum(["DRAFT", "SENT", "PAID", "OVERDUE", "CANCELLED"]),
@@ -10,6 +11,8 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { id } = await params;
     const invoice = await prisma.invoice.findUnique({
@@ -34,6 +37,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { id } = await params;
     const body = await request.json();
@@ -105,6 +110,8 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth();
+  if (!session) return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   try {
     const { id } = await params;
     await prisma.invoice.delete({ where: { id } });
