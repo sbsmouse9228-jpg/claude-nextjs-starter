@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { QuoteData } from "@/types/quote";
 import { formatQuoteAmount, formatQuoteDate } from "@/lib/format";
-import { Download, CheckCircle2, Clock, Send, XCircle, Loader2 } from "lucide-react";
+import { Download, CheckCircle2, Clock, Send, XCircle, Loader2, AlertTriangle } from "lucide-react";
 
 const STATUS_CONFIG = {
   초안: { label: "초안", icon: Clock, className: "bg-gray-100 text-gray-600" },
@@ -18,6 +18,10 @@ export default function QuoteViewer({ quote }: { quote: QuoteData }) {
 
   const status = quote.status ? STATUS_CONFIG[quote.status] : null;
   const StatusIcon = status?.icon;
+  const isExpired =
+    quote.dueDate !== null &&
+    new Date(quote.dueDate) < new Date() &&
+    quote.status !== "승인됨";
 
   const handleDownloadPDF = async () => {
     if (isGenerating) return;
@@ -70,12 +74,20 @@ export default function QuoteViewer({ quote }: { quote: QuoteData }) {
               <p className="text-gray-400 text-sm mb-1">견적서</p>
               <h1 className="text-2xl font-bold">{quote.title}</h1>
             </div>
-            {status && StatusIcon && (
-              <span className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full ${status.className}`}>
-                <StatusIcon className="w-4 h-4" />
-                {status.label}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {isExpired && (
+                <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-red-900/40 text-red-300">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  만료됨
+                </span>
+              )}
+              {status && StatusIcon && (
+                <span className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full ${status.className}`}>
+                  <StatusIcon className="w-4 h-4" />
+                  {status.label}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

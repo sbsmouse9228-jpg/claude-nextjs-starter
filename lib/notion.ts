@@ -1,4 +1,5 @@
 import { Client } from "@notionhq/client";
+import { unstable_cache } from "next/cache";
 import type { QuoteData, LineItem } from "@/types/quote";
 import type { BlogPost, BlogPostDetail, NotionBlock, RichText } from "@/types/blog";
 
@@ -10,7 +11,7 @@ function extractRichText(richText: { plain_text: string }[]): string {
   return richText?.map((t) => t.plain_text).join("") ?? "";
 }
 
-export async function getQuote(pageId: string): Promise<QuoteData | null> {
+const _getQuote = async (pageId: string): Promise<QuoteData | null> => {
   try {
     const [page, blocksRes] = await Promise.all([
       notion.pages.retrieve({ page_id: pageId }),
@@ -68,7 +69,9 @@ export async function getQuote(pageId: string): Promise<QuoteData | null> {
   } catch {
     return null;
   }
-}
+};
+
+export const getQuote = unstable_cache(_getQuote, ["quote"], { revalidate: 60 });
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {

@@ -1,7 +1,4 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { Users, UserPlus, Check } from "lucide-react"
+import { Users } from "lucide-react"
 import {
   Card,
   CardHeader,
@@ -10,39 +7,26 @@ import {
   CardContent,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-
-const users = [
-  { name: "김철수", email: "kim@example.com", role: "관리자", status: "활성", initial: "김", joined: "2025-01-15" },
-  { name: "이영희", email: "lee@example.com", role: "편집자", status: "활성", initial: "이", joined: "2025-02-20" },
-  { name: "박민준", email: "park@example.com", role: "뷰어", status: "활성", initial: "박", joined: "2025-03-10" },
-  { name: "최수진", email: "choi@example.com", role: "편집자", status: "비활성", initial: "최", joined: "2025-04-05" },
-  { name: "정현우", email: "jung@example.com", role: "뷰어", status: "활성", initial: "정", joined: "2025-05-18" },
-  { name: "강지원", email: "kang@example.com", role: "뷰어", status: "대기", initial: "강", joined: "2026-06-01" },
-]
+import { prisma } from "@/lib/prisma"
+import { AddUserButton } from "./add-user-button"
 
 const roleVariant: Record<string, "default" | "secondary" | "outline"> = {
-  관리자: "default",
-  편집자: "secondary",
-  뷰어: "outline",
+  admin: "default",
+  editor: "secondary",
+  viewer: "outline",
 }
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  활성: "default",
-  비활성: "destructive",
-  대기: "outline",
+const roleLabel: Record<string, string> = {
+  admin: "관리자",
+  editor: "편집자",
+  viewer: "뷰어",
 }
 
-export default function UsersPage() {
-  const [added, setAdded] = useState(false)
-
-  const handleAddUser = () => setAdded(true)
-
-  useEffect(() => {
-    if (!added) return
-    const id = setTimeout(() => setAdded(false), 2000)
-    return () => clearTimeout(id)
-  }, [added])
+export default async function UsersPage() {
+  const users = await prisma.user.findMany({
+    select: { id: true, name: true, email: true, role: true, createdAt: true },
+    orderBy: { createdAt: "desc" },
+  })
 
   return (
     <div>
@@ -51,10 +35,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold tracking-tight">사용자 관리</h1>
           <p className="text-muted-foreground mt-1">등록된 사용자 목록을 관리합니다.</p>
         </div>
-        <Button size="sm" onClick={handleAddUser}>
-          {added ? <Check className="mr-1 size-4" /> : <UserPlus className="mr-1 size-4" />}
-          {added ? "추가됨" : "사용자 추가"}
-        </Button>
+        <AddUserButton />
       </div>
 
       <Card>
@@ -66,29 +47,45 @@ export default function UsersPage() {
           <CardDescription>전체 등록 사용자 현황입니다.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {users.map((user, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 rounded-lg border border-border/50 p-3"
-              >
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-                  {user.initial}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium leading-none">{user.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{user.email}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={roleVariant[user.role] ?? "outline"}>{user.role}</Badge>
-                  <Badge variant={statusVariant[user.status] ?? "outline"}>{user.status}</Badge>
-                </div>
-                <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">
-                  {user.joined}
-                </span>
-              </div>
-            ))}
-          </div>
+          {users.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Users className="mb-3 size-10 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">등록된 사용자가 없습니다.</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                <code>npm run db:admin</code>으로 관리자를 생성하세요.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {users.map((user) => {
+                const initial = user.name.charAt(0)
+                const joinedAt = new Date(user.createdAt).toLocaleDateString("ko-KR")
+                const role = user.role
+                return (
+                  <div
+                    key={user.id}
+                    className="flex items-center gap-4 rounded-lg border border-border/50 p-3"
+                  >
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                      {initial}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant={roleVariant[role] ?? "outline"}>
+                        {roleLabel[role] ?? role}
+                      </Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">
+                      {joinedAt}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
