@@ -24,3 +24,8 @@ export type QuoteData = {
   lineItems: LineItem[];
   coverImage: string | null;
 };
+
+export type QuoteListItem = Pick<
+  QuoteData,
+  "id" | "title" | "clientName" | "status" | "issueDate" | "dueDate" | "total" | "currency"
+>;

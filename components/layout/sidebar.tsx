@@ -2,12 +2,13 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Receipt, LayoutDashboard, FileText, Users, BarChart3, Settings } from "lucide-react"
+import { Receipt, LayoutDashboard, FileText, Users, BarChart3, Settings, ClipboardList } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
   { href: "/dashboard/invoices", label: "청구서", icon: FileText },
+  { href: "/dashboard/quotes", label: "견적서", icon: ClipboardList },
   { href: "/dashboard/customers", label: "고객", icon: Users },
   { href: "/dashboard/analytics", label: "통계", icon: BarChart3 },
   { href: "/dashboard/settings", label: "설정", icon: Settings },

@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
-import type { QuoteData, LineItem } from "@/types/quote";
+import type { QuoteData, LineItem, QuoteListItem } from "@/types/quote";
 import type { BlogPost, BlogPostDetail, NotionBlock, RichText } from "@/types/blog";
 
 export const notion = new Client({
@@ -97,6 +97,37 @@ const _getQuote = async (pageId: string): Promise<QuoteData | null> => {
 };
 
 export const getQuote = unstable_cache(_getQuote, ["quote"], { revalidate: 60 });
+
+const _listQuotes = async (): Promise<QuoteListItem[]> => {
+  try {
+    const res = await withRetry(() =>
+      notion.databases.query({
+        database_id: process.env.NOTION_DATABASE_ID!,
+        sorts: [{ property: "발행일", direction: "descending" }],
+      })
+    );
+
+    return res.results
+      .filter((p) => "properties" in p)
+      .map((p) => {
+        const props = (p as any).properties;
+        return {
+          id: p.id,
+          title: extractRichText(props["이름"]?.title ?? []),
+          clientName: extractRichText(props["클라이언트명"]?.rich_text ?? []),
+          status: props["상태"]?.select?.name ?? null,
+          issueDate: props["발행일"]?.date?.start ?? null,
+          dueDate: props["만료일"]?.date?.start ?? null,
+          total: props["총액"]?.number ?? 0,
+          currency: props["통화"]?.select?.name ?? "KRW",
+        } as QuoteListItem;
+      });
+  } catch {
+    return [];
+  }
+};
+
+export const listQuotes = unstable_cache(_listQuotes, ["quotes-list"], { revalidate: 60 });
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
   try {
